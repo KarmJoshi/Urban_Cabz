@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function WhyChooseUs({ title, subtitle, features }) {
   return (
-    <section className="w-full py-16 md:py-10 bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col items-center px-6">
+    <section className="w-full py-16 md:py-10  from-gray-50 via-white to-gray-100 flex flex-col items-center px-6">
       {/* Title */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
