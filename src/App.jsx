@@ -1,14 +1,19 @@
-
-import Section01 from './Components/Section01/Section01';
-import Section02 from './Components/Section02/Section02';
-import Footer from './Components/Footer';
-
+import Footer from './Components/Footer/Footer';
+import Navbar from './Components/Navigation/Navbar';
+import B2BLandingPage from './Pages/B2BLandingPage';
+import LandingPage from './Pages/LandingPage';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 function App() {
   return (
     <div className="overflow-x-hidden">
-      <Section01 />
-      <Section02 />
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/b2b" element={<B2BLandingPage />} />
+        </Routes>
       <Footer />
+    </Router>
     </div>
   )
 }

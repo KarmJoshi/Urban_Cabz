@@ -37,15 +37,27 @@ export default function Input() {
       item.toLowerCase().includes(query.toLowerCase())
     );
 
+  const hideWithDelay = (setter) => {
+    setTimeout(() => setter(false), 150);
+  };
+
   return (
+    // Note: if your header is fixed, make sure your page wrapper (e.g. <main>) has top padding like `pt-16`
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="bg-white/15 backdrop-blur-md border border-white/30 rounded-3xl p-8 md:p-10 shadow-2xl mx-auto max-w-5xl"
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="
+        bg-white/15 backdrop-blur-md border border-white/30 
+        rounded-3xl p-4 md:p-6 lg:p-8
+        mx-auto max-w-2xl w-[95%] 
+        relative z-40
+        /* keep component from exceeding viewport - allow inner scroll */
+        max-h-[calc(100vh-140px)] overflow-y-auto
+      "
     >
       {/* Ride Type Buttons */}
-      <div className="flex justify-center gap-6 mb-8 flex-wrap">
+      <div className="flex justify-center gap-3 mb-5 flex-wrap">
         {[
           { value: "airport", label: "✈️ Airport" },
           { value: "oneway", label: "🛣️ One-Way" },
@@ -54,9 +66,9 @@ export default function Input() {
           <button
             key={option.value}
             onClick={() => setRideType(option.value)}
-            className={`px-5 py-2.5 rounded-full transition-all duration-300 font-semibold ${
+            className={`px-4 py-2 rounded-full transition-all duration-200 font-semibold text-sm ${
               rideType === option.value
-                ? "bg-yellow-400 text-gray-900 shadow-lg scale-105"
+                ? "bg-yellow-400 text-gray-900 shadow-md scale-105"
                 : "bg-white/20 text-white hover:bg-white/30"
             }`}
           >
@@ -65,15 +77,16 @@ export default function Input() {
         ))}
       </div>
 
-      {/* Form Fields */}
+      {/* Form: stack on small and medium (laptop), go to 2-col only on large screens */}
       <AnimatePresence mode="wait">
         <motion.form
           key={rideType}
-          initial={{ opacity: 0, y: 25 }}
+          layout
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -25 }}
-          transition={{ duration: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          exit={{ opacity: 0, y: -18 }}
+          transition={{ duration: 0.35 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4"
         >
           {/* From */}
           <div className="relative">
@@ -87,30 +100,33 @@ export default function Input() {
                 setFromQuery(e.target.value);
                 setShowFromSuggestions(true);
               }}
+              onBlur={() => hideWithDelay(setShowFromSuggestions)}
+              onFocus={() => fromQuery && setShowFromSuggestions(true)}
               placeholder={
                 rideType === "airport"
                   ? "Select pickup airport"
                   : "Enter pickup city"
               }
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 text-white outline-none"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 text-white outline-none bg-transparent text-sm"
             />
             {showFromSuggestions && fromQuery && (
-              <ul className="absolute left-0 right-0 bg-white text-gray-800 rounded-lg shadow-lg mt-1 z-50 max-h-48 overflow-y-auto">
+              <ul className="absolute left-0 right-0 bg-white text-gray-800 rounded-lg shadow-lg mt-1 z-[120] max-h-40 overflow-y-auto">
                 {getSuggestions(fromQuery, rideType).length > 0 ? (
                   getSuggestions(fromQuery, rideType).map((s, i) => (
                     <li
                       key={i}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
                         setFromQuery(s);
                         setShowFromSuggestions(false);
                       }}
-                      className="px-4 py-2 hover:bg-yellow-100 cursor-pointer"
+                      className="px-3 py-2 hover:bg-yellow-100 cursor-pointer text-sm"
                     >
                       {s}
                     </li>
                   ))
                 ) : (
-                  <li className="px-4 py-2 text-gray-500">No matches found</li>
+                  <li className="px-3 py-2 text-gray-500 text-sm">No matches found</li>
                 )}
               </ul>
             )}
@@ -128,55 +144,46 @@ export default function Input() {
                 setToQuery(e.target.value);
                 setShowToSuggestions(true);
               }}
+              onBlur={() => hideWithDelay(setShowToSuggestions)}
+              onFocus={() => toQuery && setShowToSuggestions(true)}
               placeholder={
                 rideType === "airport"
                   ? "Select destination airport"
                   : "Enter destination city"
               }
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none bg-transparent text-sm"
             />
             {showToSuggestions && toQuery && (
-              <ul className="absolute left-0 right-0 bg-white text-gray-800 rounded-lg shadow-lg mt-1 z-50 max-h-48 overflow-y-auto">
+              <ul className="absolute left-0 right-0 bg-white text-gray-800 rounded-lg shadow-lg mt-1 z-[120] max-h-40 overflow-y-auto">
                 {getSuggestions(toQuery, rideType).length > 0 ? (
                   getSuggestions(toQuery, rideType).map((s, i) => (
                     <li
                       key={i}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
                         setToQuery(s);
                         setShowToSuggestions(false);
                       }}
-                      className="px-4 py-2 hover:bg-yellow-100 cursor-pointer"
+                      className="px-3 py-2 hover:bg-yellow-100 cursor-pointer text-sm"
                     >
                       {s}
                     </li>
                   ))
                 ) : (
-                  <li className="px-4 py-2 text-gray-500">No matches found</li>
+                  <li className="px-3 py-2 text-gray-500 text-sm">No matches found</li>
                 )}
               </ul>
             )}
           </div>
 
-         {/* Pickup Date */}
+          {/* Pickup Date */}
           <div>
             <label className="block text-sm font-semibold text-white mb-1">
               Pickup Date
             </label>
             <input
               type="date"
-              className="
-                w-full px-4 py-3 rounded-lg border border-gray-300 
-                bg-transparent text-white
-                focus:ring-2 focus:ring-yellow-400 outline-none 
-                appearance-none 
-                [&::-webkit-calendar-picker-indicator]:opacity-70
-                [&::-webkit-datetime-edit]:text-white
-                [&::-webkit-datetime-edit-fields-wrapper]:text-white
-                [&::-webkit-datetime-edit-text]:text-white
-                [&::-webkit-datetime-edit-month-field]:text-white
-                [&::-webkit-datetime-edit-day-field]:text-white
-                [&::-webkit-datetime-edit-year-field]:text-white
-              "
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-transparent text-white focus:ring-2 focus:ring-yellow-400 outline-none appearance-none text-sm"
             />
           </div>
 
@@ -187,54 +194,33 @@ export default function Input() {
             </label>
             <input
               type="time"
-              className="
-                w-full px-4 py-3 rounded-lg border border-gray-300 
-                bg-transparent text-white
-                focus:ring-2 focus:ring-yellow-400 outline-none 
-                appearance-none
-                [&::-webkit-calendar-picker-indicator]:opacity-70
-              [&::-webkit-datetime-edit]:text-white
-              [&::-webkit-datetime-edit-fields-wrapper]:text-white
-              [&::-webkit-datetime-edit-text]:text-white
-             "
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-transparent text-white focus:ring-2 focus:ring-yellow-400 outline-none appearance-none text-sm"
             />
           </div>
 
-          {/* Return fields for roundtrip */}
+          {/* Roundtrip Extra Fields
+              Use lg:col-span-2 so these span both columns only on large screens;
+              on laptops and smaller they will stack naturally (avoid cramped layout).
+          */}
           {rideType === "roundtrip" && (
             <>
-              <div>
+              <div className="lg:col-span-2">
                 <label className="block text-sm font-semibold text-white mb-1">
                   Return Date
                 </label>
                 <input
                   type="date"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 
-                    bg-transparent text-white
-                    focus:ring-2 focus:ring-yellow-400 outline-none 
-                    appearance-none
-                    [&::-webkit-calendar-picker-indicator]:opacity-70
-                  [&::-webkit-datetime-edit]:text-white
-                  [&::-webkit-datetime-edit-fields-wrapper]:text-white
-                  [&::-webkit-datetime-edit-text]:text-white
-                "
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-transparent text-white focus:ring-2 focus:ring-yellow-400 outline-none appearance-none text-sm"
                 />
               </div>
-              <div>
+
+              <div className="lg:col-span-2">
                 <label className="block text-sm font-semibold text-white mb-1">
                   Drop Time
                 </label>
                 <input
                   type="time"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 
-                  bg-transparent text-white
-                  focus:ring-2 focus:ring-yellow-400 outline-none 
-                  appearance-none
-                  [&::-webkit-calendar-picker-indicator]:opacity-70
-                [&::-webkit-datetime-edit]:text-white
-                [&::-webkit-datetime-edit-fields-wrapper]:text-white
-                [&::-webkit-datetime-edit-text]:text-white
-                "
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-transparent text-white focus:ring-2 focus:ring-yellow-400 outline-none appearance-none text-sm"
                 />
               </div>
             </>
@@ -242,12 +228,12 @@ export default function Input() {
         </motion.form>
       </AnimatePresence>
 
-      {/* Book Ride Button */}
-      <div className="text-center mt-10">
+      {/* Book Button */}
+      <div className="text-center mt-5 pb-3">
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-10 py-3 bg-yellow-400 text-gray-900 font-bold rounded-xl hover:bg-yellow-300 transition duration-300 shadow-lg hover:shadow-2xl"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="px-8 py-2 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-300 transition duration-200 shadow-md"
         >
           🚖 Book Ride
         </motion.button>
