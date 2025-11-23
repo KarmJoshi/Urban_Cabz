@@ -26,6 +26,7 @@ export default function HeroFullCover({
       />
 
       {/* Dark gradient overlay to ensure legibility */}
+      <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/35 to-black/45 -z-5" />
 
       {/* Optional soft vignette to focus center */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
