@@ -1,7 +1,6 @@
 // HeroFullCover.jsx
 import React from "react";
 import { motion } from "framer-motion";
-console.log("Hi");
 
 export default function HeroFullCover({
   imageSrc = "https://images.unsplash.com/photo-1513759338966-5de23c844b3a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -27,7 +26,6 @@ export default function HeroFullCover({
       />
 
       {/* Dark gradient overlay to ensure legibility */}
-      <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/35 to-black/45 -z-5" />
 
       {/* Optional soft vignette to focus center */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
