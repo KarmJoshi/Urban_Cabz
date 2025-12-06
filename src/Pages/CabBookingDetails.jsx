@@ -69,10 +69,23 @@ export default function CabBookingDetails() {
     });
 
     if (result.success) {
-      alert("Payment  successfuland booking confirmed!");
+      alert("Payment successful and booking confirmed!");
       navigate("/");
     } else if (!result.cancelled) {
-      alert(result.message || "Payment failed. Please try again.");
+      // Show user-friendly error message
+      const errorMessage = result.message || "Payment failed. Please try again.";
+      if (result.paymentFailed) {
+        alert(
+          `${errorMessage}\n\n` +
+          `Common reasons:\n` +
+          `• Insufficient funds\n` +
+          `• Bank/wallet gateway error\n` +
+          `• Network connectivity issues\n\n` +
+          `Please try again or use a different payment method.`
+        );
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 

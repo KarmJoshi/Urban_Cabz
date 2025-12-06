@@ -190,11 +190,14 @@ export async function initiateRazorpayPayment({
   const orderResult = await createPaymentOrder(createOrderPayload);
 
   if (!orderResult.success) {
+    console.error("Failed to create payment order:", orderResult);
     return orderResult;
   }
 
   const { keyId, orderId, amount: orderAmount, currency: orderCurrency } =
     orderResult;
+
+  console.log("Payment order created:", { keyId, orderId, orderAmount, orderCurrency });
 
   if (!window.Razorpay) {
     return {
@@ -203,23 +206,64 @@ export async function initiateRazorpayPayment({
     };
   }
 
+  // Validate required fields
+  if (!keyId || !orderId || !orderAmount) {
+    return {
+      success: false,
+      message: "Invalid payment order data. Please try again.",
+    };
+  }
+
   return new Promise((resolve) => {
     const options = {
       key: keyId,
-      amount: orderAmount,
-      currency: orderCurrency,
+      amount: Number(orderAmount), // Ensure amount is a number (in paise)
+      currency: orderCurrency || "INR",
       order_id: orderId,
+      name: "Urban Cabz",
+      description: `Booking from ${bookingDetails.from || "Pickup"} to ${bookingDetails.to || "Drop"}`,
+      // Enable UPI and other payment methods
+      method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true,
+      },
       handler: async function (response) {
         // response.razorpay_payment_id
         // response.razorpay_order_id
         // response.razorpay_signature
         try {
-          const result = await verifyAndBookPayment({
+          // Extract payment amount (partial or full) and total booking amount
+          const paymentAmount = bookingDetails.amount || amount;
+          const totalBookingAmount = bookingDetails.totalFare || amount;
+          
+          // Format scheduledAt if needed
+          const scheduledAt = formatScheduledAt(
+            bookingDetails.pickupDate,
+            bookingDetails.pickupTime
+          );
+          
+          // Build request body matching backend expected format
+          const verifyPayload = {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_signature: response.razorpay_signature,
-            bookingDetails,
-          });
+            amount: paymentAmount, // Partial or full payment amount
+            totalAmount: totalBookingAmount, // Total booking amount
+            pickupLocation: bookingDetails.from || "",
+            dropLocation: bookingDetails.to || "",
+            distanceKm: bookingDetails.distanceKm || 0,
+            estimatedFare: bookingDetails.totalFare || totalBookingAmount,
+            scheduledAt: scheduledAt,
+            // Include other booking details if needed
+            vehicleId: bookingDetails.vehicleId,
+            vehicleName: bookingDetails.vehicleName,
+            vehicleType: bookingDetails.vehicleType,
+            rideType: bookingDetails.rideType,
+          };
+          
+          const result = await verifyAndBookPayment(verifyPayload);
           resolve(result);
         } catch (error) {
           console.error("verifyAndBookPayment handler error:", error);
@@ -251,7 +295,40 @@ export async function initiateRazorpayPayment({
     };
 
     const rzp = new window.Razorpay(options);
-    rzp.open();
+    
+    // Handle payment errors
+    rzp.on('payment.failed', function (response) {
+      console.error('Payment failed:', response);
+      resolve({
+        success: false,
+        message: response.error?.description || 
+                 response.error?.reason || 
+                 "Payment processing failed due to error at bank or wallet gateway. Please try again or use a different payment method.",
+        error: response.error,
+        paymentFailed: true,
+      });
+    });
+
+    // Handle other Razorpay events for debugging
+    rzp.on('payment.authorized', function (response) {
+      console.log('Payment authorized:', response);
+    });
+
+    rzp.on('payment.captured', function (response) {
+      console.log('Payment captured:', response);
+    });
+
+    // Open Razorpay checkout
+    try {
+      rzp.open();
+    } catch (error) {
+      console.error('Error opening Razorpay checkout:', error);
+      resolve({
+        success: false,
+        message: "Failed to open payment gateway. Please try again.",
+        error: error.message,
+      });
+    }
   });
 }
 
